@@ -364,5 +364,3 @@ FAKE_API_RESPONSE=true
 # Author
 
 **Sanat Gawade**
-
-```
