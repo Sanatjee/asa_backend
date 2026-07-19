@@ -275,6 +275,122 @@ If a question cannot be answered confidently, the conversation is marked for fol
 
 ---
 
+## AI Prompt Design
+
+The AI-powered Educational Assistant uses a carefully designed prompt to ensure responses are accurate, consistent, and strictly based on the Program Knowledge Base (KB).
+
+### Prompt Objective
+
+The prompt instructs the AI model to:
+
+- Answer questions **only** using the information available in the Program Knowledge Base.
+- Never fabricate or infer information that is not present in the KB.
+- Return responses in a fixed JSON structure for easy backend processing.
+- Identify queries that require human intervention by marking them as follow-up.
+
+### Prompt Structure
+
+The AI is instructed to return the following JSON format:
+
+```json
+{
+    "answer": "string",
+    "needs_followup": true | false
+}
+```
+
+### Response Rules
+
+#### Case 1: Information Found
+
+If the requested information exists in the Knowledge Base:
+
+- `answer` contains a concise response.
+- `needs_followup` is set to `false`.
+
+Example:
+
+```json
+{
+    "answer": "The program fee is ₹25,000.",
+    "needs_followup": false
+}
+```
+
+---
+
+#### Case 2: Information Not Found
+
+If the answer is unavailable or the AI is uncertain:
+
+- The AI returns a predefined response.
+- `needs_followup` is set to `true`.
+
+Example:
+
+```json
+{
+    "answer": "I don't have enough information to answer this question.",
+    "needs_followup": true
+}
+```
+
+The backend detects this flag and automatically marks the chat session as **Follow-up**, allowing an administrator to review and respond later.
+
+### Why JSON Output?
+
+Returning structured JSON instead of plain text provides several advantages:
+
+- Easy parsing by the Laravel backend.
+- Eliminates ambiguity in AI responses.
+- Prevents unnecessary string matching.
+- Enables reliable automation of follow-up workflows.
+- Keeps the frontend independent of AI response formatting.
+
+### Hallucination Prevention
+
+To minimize AI hallucinations, the prompt explicitly instructs the model to:
+
+- Use **only** the supplied Knowledge Base.
+- Never use external knowledge.
+- Never guess missing information.
+- Return a follow-up response whenever sufficient information is unavailable.
+
+This ensures the assistant behaves as a **retrieval-based educational assistant** rather than a general-purpose chatbot.
+
+### Overall Flow
+
+```
+User Question
+      │
+      ▼
+Program Knowledge Base
+      │
+      ▼
+Construct Prompt
+      │
+      ▼
+AI Model
+      │
+      ▼
+JSON Response
+      │
+      ├── needs_followup = false
+      │        │
+      │        ▼
+      │   Display Answer
+      │
+      └── needs_followup = true
+               │
+               ▼
+      Mark Chat Session as Follow-up
+               │
+               ▼
+      Administrator Reviews Query
+```
+
+This prompt design ensures the Educational Assistant provides reliable, deterministic, and production-ready responses while enabling seamless escalation of unanswered queries to administrators.
+
 # Seeded Data
 
 The application seeds:

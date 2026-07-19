@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProgramKBController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 
 Route::post('/auth/login',[AuthController::class, 'login']);
@@ -14,6 +15,12 @@ Route::post('/auth/login',[AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->prefix('auth')->group(function () 
 {
     Route::post('logout',[AuthController::class, 'logout']);   
+});
+
+Route::middleware(['auth:sanctum', 'permission:role.permission.manage'])->prefix('roles')->group(function () {
+        Route::get('/', [RoleController::class, 'index']);
+        Route::get('/{role}', [RoleController::class, 'show']);
+        Route::put('/{role}/permissions', [RoleController::class, 'updatePermissions']);
 });
 
 Route::middleware('auth:sanctum')->group(function(){
