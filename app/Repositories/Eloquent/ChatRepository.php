@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Enums\ChatSender;
 use App\Enums\ChatSessionResolution;
+use App\Enums\ChatSessionResolutionBy;
 use App\Enums\ChatSessionStatus;
 use App\Models\ChatMessage;
 use App\Models\ChatSession;
@@ -58,12 +59,16 @@ class ChatRepository implements ChatRepositoryInterface
             'status' => ChatSessionStatus::INACTIVE,
             'completed_at' => now(),
             'resolution_flag' => ChatSessionResolution::RESOLVED,
+            'resolved_by' => ChatSessionResolutionBy::SUPPORT,
         ]);
 
         return $session->fresh();
     }
 
-    public function updateResolution(ChatSession $session, ChatSessionResolution $resolution): ChatSession
+    public function updateResolution(
+        ChatSession $session, ChatSessionResolution $resolution, 
+        ChatSessionResolutionBy $resolutionBy = null
+    ): ChatSession
     {
         $session->update([
             'status' => ChatSessionStatus::ACTIVE,
@@ -71,6 +76,7 @@ class ChatRepository implements ChatRepositoryInterface
                 ? now()
                 : null,
             'resolution_flag' => $resolution,
+            'resolution_by' => $resolutionBy,
         ]);
 
         return $session->fresh();

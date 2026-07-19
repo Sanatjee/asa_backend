@@ -32,45 +32,65 @@ class AIService
             })
             ->implode("\n");
 
-        $prompt = <<<PROMPT
-                You are an educational assistant. Answer ONLY using the knowledge base provided below.
-                Return ONLY valid JSON.
+        $prompt = $prompt = <<<PROMPT
+You are an educational assistant. Answer ONLY using the knowledge base provided below.
+Return ONLY valid JSON.
 
-                Schema:
-                {
-                    "answer": "string",
-                    "category": "string|null",
-                    "needs_followup": true|false
-                }
+Schema:
+{
+    "answer": "string",
+    "category": "string|null",
+    "needs_followup": true|false,
+    "is_resolved": true|false
+}
 
-                Rules:
-                1. If the answer exists in the knowledge base:
-                - answer = concise answer
-                - category = the category of the knowledge base entry from which the answer was obtained
-                - needs_followup = false
+Rules:
 
-                2. If the answer is NOT present OR you are unsure:
-                - answer = "I don't have enough information to answer this question."
-                - category = null
-                - needs_followup = true
+1. If the user's current message is an affirmative response to the question "Is your query resolved?" (examples: "yes", "yes it is", "resolved", "thank you", "thanks", "it worked", "that solved my issue", "issue resolved", or any other clear affirmative confirmation):
+- answer = "I'm glad I could help. Your query has been marked as resolved."
+- category = null
+- needs_followup = false
+- is_resolved = true
 
-                Do not invent or infer a category. The category must exactly match the category of the knowledge base entry that contains the answer.
+2. If the answer to the user's question exists in the knowledge base:
+- answer = Provide a concise and accurate answer using ONLY the knowledge base.
+- At the end of the answer, append:
+  "Is your query resolved? Please reply Yes or No."
+- category = the exact category of the knowledge base entry from which the answer was obtained.
+- needs_followup = false
+- is_resolved = false
 
-                Do not include markdown.
-                Do not include explanation.
-                Do not include any text outside JSON.
+3. If the answer is NOT present in the knowledge base OR you are unsure:
+- answer = "I don't have enough information to answer this question. Your query has been forwarded to our support team."
+- category = null
+- needs_followup = true
+- is_resolved = false
 
-                Knowledge Base:
-                {$context}
+Additional Rules:
+- Use ONLY the information available in the knowledge base.
+- Never invent or assume information.
+- Never invent or infer a category.
+- The category must exactly match the category of the knowledge base entry used to answer the question.
+- Return ONLY valid JSON.
+- Do not include markdown.
+- Do not include explanations.
+- Do not include any text outside the JSON object.
 
-                Question:
-                {$question}
-                PROMPT;
+Knowledge Base:
+{$context}
+
+Question:
+{$question}
+PROMPT;
 
         try {
             $response = (new EducationalAssistant())->prompt($prompt);
 
             $outer = json_decode($response, true);
+
+            logger()->error('AI Error', [
+                'AI ANS' => $outer,
+            ]);
 
             if (!isset($outer['value'])) {
                 return [
@@ -95,6 +115,7 @@ class AIService
                 'message' => $decoded['answer'],
                 'needs_followup' => (bool) $decoded['needs_followup'],
                 'category' => (bool) isset($decoded['category']) ? $decoded['category'] : null,
+                'is_resolved' => (bool) isset($decoded['is_resolved']) ? $decoded['is_resolved'] : null,
             ];
         } catch (\Throwable $e) {
 

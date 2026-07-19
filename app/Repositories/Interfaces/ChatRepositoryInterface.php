@@ -3,6 +3,7 @@
 namespace App\Repositories\Interfaces;
 
 use App\Enums\ChatSessionResolution;
+use App\Enums\ChatSessionResolutionBy;
 use App\Models\ChatMessage;
 use App\Models\ChatSession;
 
@@ -21,7 +22,7 @@ interface ChatRepositoryInterface
 
     public function resolveSession(ChatSession $session);
 
-    public function updateResolution( ChatSession $session, ChatSessionResolution $resolution ): ChatSession;
+    public function updateResolution( ChatSession $session, ChatSessionResolution $resolution,ChatSessionResolutionBy $resolutionBy ): ChatSession;
 
     public function total_sessions();
     

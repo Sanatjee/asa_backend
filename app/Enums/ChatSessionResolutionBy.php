@@ -2,9 +2,8 @@
 
 namespace App\Enums;
 
-enum ChatSender: string
+enum ChatSessionResolutionBy: string
 {
-    case USER = 'user';
     case ASSISTANT = 'assistant'; //For AI
     case SUPPORT = 'support'; //Human Admin
 }

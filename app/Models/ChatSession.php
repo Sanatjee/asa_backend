@@ -12,6 +12,7 @@ class ChatSession extends Model
         'user_id',
         'status',
         'resolution_flag',
+        'resolved_by',
         'started_at',
         'completed_at',
     ];

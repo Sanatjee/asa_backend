@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\ChatSender;
 use App\Enums\ChatSessionResolution;
+use App\Enums\ChatSessionResolutionBy;
 use App\Models\User;
 use App\Models\ChatSession;
 use App\Models\ChatMessage;
@@ -86,7 +87,7 @@ class ChatService
             if (isset($response['needs_followup']) && $response['needs_followup']) {
                 $this->chatRepository->updateResolution(
                     $session,
-                    ChatSessionResolution::FOLLOWUP
+                    ChatSessionResolution::FOLLOWUP,
                 );
             }
 
@@ -96,10 +97,49 @@ class ChatService
                 );
             }
 
+            if (isset($response['is_resolved']) && $response['is_resolved']) {
+                $this->chatRepository->updateResolution(
+                    $session,
+                    ChatSessionResolution::RESOLVED,
+                    ChatSessionResolutionBy::ASSISTANT
+                );
+            }
+
 
             return [
                 'user_message' => $userMessage,
                 'assistant_message' => $assistantMessage,
+                'session' => $session->fresh(),
+            ];
+        });
+    }
+
+    public function sendSupportReply(
+        User $admin,
+        ChatSession $session,
+        string $message
+    ) {
+        return DB::transaction(function () use (
+            $admin,
+            $session,
+            $message
+        ) {
+
+            $supportMessage = ChatMessage::create([
+                'chat_session_id' => $session->id,
+                'sender' => ChatSender::SUPPORT,
+                'message' => $message,
+            ]);
+
+            // Conversation is still awaiting applicant confirmation
+            $this->chatRepository->updateResolution(
+                $session,
+                ChatSessionResolution::FOLLOWUP,
+                null
+            );
+
+            return [
+                'message' => $supportMessage,
                 'session' => $session->fresh(),
             ];
         });

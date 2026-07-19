@@ -45,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post( '/chat-sessions', [ChatController::class, 'create'] );
     Route::get( '/chat-sessions/{chatSession}', [ChatController::class, 'show']);
     Route::post( '/chat-sessions/{chatSession}/messages', [ChatController::class, 'send']);
+    Route::post( '/chat-sessions/{chatSession}/support-reply', [ChatController::class, 'sendSupportReply']);
     Route::delete( '/chat-sessions/{chatSession}', [ChatController::class, 'destroy']);
     Route::patch( '/chat-sessions/{chatSession}/resolve', [ChatController::class, 'resolve'] );
 });

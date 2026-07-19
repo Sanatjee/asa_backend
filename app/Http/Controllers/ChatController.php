@@ -86,9 +86,25 @@ class ChatController extends Controller
         ]);
     }
 
-    /**
-     * Delete a chat session
-     */
+    public function sendSupportReply(Request $request, ChatSession $chatSession)
+    {
+        $request->validate([
+            'message' => ['required', 'string'],
+        ]);
+
+        $data = $this->service->sendSupportReply(
+            auth()->user(),
+            $chatSession,
+            $request->message
+        );
+
+        return response()->json([
+            'message' => 'Reply sent successfully.',
+            'data' => $data,
+        ]);
+    }
+
+
     public function destroy(ChatSession $chatSession)
     {
         $this->service->authorizeSession(
