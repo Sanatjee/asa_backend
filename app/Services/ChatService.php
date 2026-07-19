@@ -90,6 +90,12 @@ class ChatService
                 );
             }
 
+            if (isset($response['category']) && $response['category']) {
+                $this->chatRepository->updateMessageCategory(
+                    $userMessage,  $response['category'], 
+                );
+            }
+
 
             return [
                 'user_message' => $userMessage,

@@ -9,11 +9,12 @@ use Illuminate\Support\Facades\Log;
 class AIService
 {
     public function answer(string $question): array
-    {   
-        if(env('FAKE_API_RESPONSE')){
+    {
+        if (env('FAKE_API_RESPONSE')) {
             return [
                 'message' => 'A random fake response from fakemini',
                 'needs_followup' => false,
+                'category' => null,
             ];
         }
         $knowledge = ProgramKB::query()
@@ -32,22 +33,28 @@ class AIService
             ->implode("\n");
 
         $prompt = <<<PROMPT
-                You are an educational assistant.Answer ONLY using the knowledge base provided below.
+                You are an educational assistant. Answer ONLY using the knowledge base provided below.
                 Return ONLY valid JSON.
+
                 Schema:
                 {
                     "answer": "string",
+                    "category": "string|null",
                     "needs_followup": true|false
                 }
 
                 Rules:
                 1. If the answer exists in the knowledge base:
                 - answer = concise answer
+                - category = the category of the knowledge base entry from which the answer was obtained
                 - needs_followup = false
 
                 2. If the answer is NOT present OR you are unsure:
                 - answer = "I don't have enough information to answer this question."
+                - category = null
                 - needs_followup = true
+
+                Do not invent or infer a category. The category must exactly match the category of the knowledge base entry that contains the answer.
 
                 Do not include markdown.
                 Do not include explanation.
@@ -62,10 +69,10 @@ class AIService
 
         try {
             $response = (new EducationalAssistant())->prompt($prompt);
-            
+
             $outer = json_decode($response, true);
-            
-            if(!isset($outer['value'])){
+
+            if (!isset($outer['value'])) {
                 return [
                     'message' => 'Sorry, something went wrong while processing your request.',
                     'needs_followup' => true,
@@ -87,6 +94,7 @@ class AIService
             return [
                 'message' => $decoded['answer'],
                 'needs_followup' => (bool) $decoded['needs_followup'],
+                'category' => (bool) isset($decoded['category']) ? $decoded['category'] : null,
             ];
         } catch (\Throwable $e) {
 

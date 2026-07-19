@@ -18,6 +18,8 @@ class DashboardService
         $followup_sessions = $this->chatRepository->followup_sessions();
         $recent_conversations = $this->chatRepository->recent_conversations();
         $session_trend = $this->chatRepository->session_trend();
+        $resolution_trend = $this->chatRepository->resolutionTrend();
+        $category_trend = $this->chatRepository->categoryTrend();
 
         return [
             "total_sessions" => $total_sessions,
@@ -26,6 +28,8 @@ class DashboardService
             "followup_sessions" => $followup_sessions,
             "recent_conversations" => $recent_conversations,
             "session_trend" => $session_trend,
+            "resolution_trend" => $resolution_trend,
+            "category_trend" => $category_trend,
         ];
     }
 }
