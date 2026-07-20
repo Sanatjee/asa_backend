@@ -134,8 +134,15 @@ php artisan serve
 Backend API
 
 ```
-http://localhost:8000
+http://localhost:8000/api
 ```
+
+## Default Users
+
+### Admin
+- Email : senthil@iitbeo.com
+- Password : password
+
 
 ---
 

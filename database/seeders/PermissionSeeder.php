@@ -35,6 +35,7 @@ class PermissionSeeder extends Seeder
             // Admin Chat Review
             'chat.review',
             'chat.analytics',
+            'chat.resolve',
 
             // Users
             'user.view',
